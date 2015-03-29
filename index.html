@@ -1,0 +1,142 @@
+<html>
+
+<head>
+
+  <script type="text/javascript" src="/vendor/jquery.min.js"></script>
+  <script type="text/javascript" src="/vendor/jsfeat-min.js"></script>
+  <script type="text/javascript" src="/vendor/compatibility.js"></script>
+  <script type="text/javascript" src="/vendor/profiler.js"></script>
+  <script type="text/javascript" src="/vendor/dat.gui.min.js"></script>
+
+</head>
+
+<body>
+
+  <!-- <video id="webcam" width="640" height="480" style="display:none;" ></video> -->
+  <video id="webcam" width="560" height="320" src='small.mp4' autoplay loop muted></video>
+
+  <div style=" width:640px;height:480px;">
+    <canvas id="canvas" width="560" height="320"></canvas>
+    <canvas id="canvas_smaller" width="140" height="80"></canvas>
+    <div id="no_rtc" class="alert alert-error" style="display:none;"></div>
+  </div>
+
+</body>
+
+<!-- <script src='fun.js'></script> -->
+
+<script type='text/javascript'>
+  console.log('starting up')
+
+  var video = document.getElementById('webcam')
+
+  var canvas = document.getElementById('canvas')
+  var canvas_smaller = document.getElementById('canvas_smaller')
+
+  var ctx = canvas.getContext('2d')
+  var ctx_smaller = canvas_smaller.getContext('2d')
+
+  video.addEventListener('ended', function() {
+    console.log('ended')
+  })
+
+  // var img_u8 = new jsfeat.matrix_t(w,h, jsfeat.U8_t | jsfeat.C1_t)
+
+  var w = 560
+  var h = 320
+
+  var px = new Uint8ClampedArray(w * h * 4)
+  var reduction_factor = 2
+  var reduced_px = new Uint8ClampedArray((w / reduction_factor) * (h / reduction_factor) * 4)
+
+  var curr_img_pyr = new jsfeat.pyramid_t(3);
+  curr_img_pyr.allocate(w, h, jsfeat.U8_t | jsfeat.C1_t)
+
+
+  var prev_img_pyr = new jsfeat.pyramid_t(3);
+  prev_img_pyr.allocate(w, h, jsfeat.U8_t | jsfeat.C1_t)
+
+  var current_image_data
+  var previous_image_data = []
+
+  tick()
+
+  function tick() {
+
+    // newframe
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+
+      // draw the video to the canvas
+      ctx.drawImage(video, 0, 0, w, h);
+      // ctx_smaller.drawImage(video,0,0,w/4,h/4)
+
+      // get the image data from the canvas
+      var imageData = ctx.getImageData(0, 0, w, h);
+      // console.log(imageData.length,w,h)
+
+      // convert to grayscale
+      jsfeat.imgproc.grayscale(imageData.data, w, h, curr_img_pyr.data[0]);
+
+      curr_img_pyr.build(curr_img_pyr.data[0])
+
+      // create a 32bit Integer view of the canvas.data.buffer
+      // var data_u32 = new Uint32Array(imageData.data.buffer)
+      var alpha = (0xff << 24)
+      // var i = curr_img_pyr.data[0].cols * curr_img_pyr.data[0].rows
+      // var pix = 0
+      // while (--i >= 0) {
+      //   pix = curr_img_pyr.data[0].buffer.u8[i]
+      //   data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix
+      // }
+      // ctx.putImageData(imageData, 0, 0)
+
+      // var alpha
+      var i
+      var pix
+
+      // push the reduced view to the screen
+      var imageData_sm = ctx_smaller.getImageData(0,0, curr_img_pyr.data[2].cols, curr_img_pyr.data[2].rows)
+      var sm_data_u32 = new Uint32Array(imageData_sm.data.buffer)
+
+      i = curr_img_pyr.data[2].cols * curr_img_pyr.data[2].rows
+      while(--i >= 0){
+        pix = curr_img_pyr.data[2].buffer.u8[i]
+        // console.log(pix)
+        sm_data_u32[i] = alpha | (pix << 16) | (pix << 8) | pix
+        // sm_data_u32[i] = Math.random()
+      }
+      ctx_smaller.putImageData(imageData_sm,0,0)
+
+
+
+
+      // var sum = 0
+      //
+      // if(previous_image_data.length){
+      //   var i
+      //   for(i=0;i<previous_image_data.length;i+=4){
+      //     sum += Math.abs(previous_image_data[i] - imageData[i])
+      //     sum += Math.abs(previous_image_data[i+1] - imageData[i+1])
+      //     sum += Math.abs(previous_image_data[i+1] - imageData[i+2])
+      //   }
+      // }
+      //
+      // // console.log(((sum / (imageData.length*255))*1).toFixed(4))
+      //
+      // previous_image_data = imageData.subarray(0,imageData.length)
+
+
+    }
+    window.requestAnimationFrame(tick)
+  }
+
+  function reduce(src, dst) {
+
+    for (var i = 0; i < dst.length; i++) {
+
+    }
+
+  }
+</script>
+
+</html>
