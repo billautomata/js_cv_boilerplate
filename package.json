@@ -1,0 +1,24 @@
+{
+  "name": "js_cv_boilerplate",
+  "version": "1.0.0",
+  "description": "_very_ wip personal boilerpate for computer vision in javascript",
+  "main": "webcam_load.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify -t brfs main.js -o build/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/billautomata/js_cv_boilerplate.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/billautomata/js_cv_boilerplate/issues"
+  },
+  "homepage": "https://github.com/billautomata/js_cv_boilerplate",
+  "dependencies": {
+    "brfs": "^1.4.0",
+    "browserify": "^9.0.7"
+  }
+}
